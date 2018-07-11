@@ -18,7 +18,7 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
 
     private final Connection connection;
 
-    private static final String CALL_ENQUEUE = "SELECT * FROM enqueue(?, ?, ?, ?, ?, ?)";
+    private static final String VALIDATE_CONNECTION = "SELECT 1";
     private static final String CALL_DEQUEUE = "SELECT * FROM dequeue(?)";
     private static final String CALL_DEQUEUE_MULTI = "SELECT * FROM dequeue(?, ?)";
     private static final String QUEUE_ERROR = "INSERT INTO jobdiag(bibliographicrecordid, agencyid, worker, error, queued) VALUES(?, ?, ?, ?, ?)";
@@ -28,7 +28,20 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
     }
 
     public void validateConnection() throws QueueException {
-
+        int reply = 0;
+        try (CallableStatement stmt = connection.prepareCall(VALIDATE_CONNECTION)) {
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                     reply = resultSet.getInt(1);
+                }
+            }
+            if (reply != 1) {
+                throw new QueueException("Database error! {} was returned instead of '1'");
+            }
+        } catch (SQLException ex) {
+            LOGGER.error(LOG_DATABASE_ERROR, ex);
+            throw new QueueException("Error connection to the database engine", ex);
+        }
     }
 
     /**
@@ -133,7 +146,6 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
         try (PreparedStatement rollback = connection.prepareStatement("ROLLBACK TO DEQUEUED")) {
             rollback.execute();
         } catch (SQLException ex) {
-            LOGGER.error(LOG_DATABASE_ERROR, ex);
             throw new QueueException("Error rolling back", ex);
         }
         queueFail(queueJob, error);
