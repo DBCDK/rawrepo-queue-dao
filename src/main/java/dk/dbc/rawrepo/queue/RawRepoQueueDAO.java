@@ -1,8 +1,5 @@
 package dk.dbc.rawrepo.queue;
 
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
-
 import java.sql.Connection;
 import java.util.List;
 
