@@ -17,7 +17,6 @@ pipeline {
 		stage("veriMaven build") {
 			steps {
 				sh "mvn clean install pmd:pmd findbugs:findbugs"
-				junit "**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/TEST-*.xml"
 			}
 		}
 		stage("Check warnings") {
