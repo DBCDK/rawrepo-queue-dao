@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.util.List;
 
 public abstract class RawRepoQueueDAO {
-    private static final XLogger LOGGER = XLoggerFactory.getXLogger(RawRepoQueueDAO.class);
 
     public static class Builder {
         private final Connection connection;
