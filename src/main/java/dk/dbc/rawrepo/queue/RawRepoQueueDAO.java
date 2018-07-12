@@ -21,6 +21,16 @@ public abstract class RawRepoQueueDAO {
     }
 
     /**
+     * Make a dao builder
+     *
+     * @param connection the database configuration
+     * @return builder
+     */
+    public static Builder builder(Connection connection) {
+        return new Builder(connection);
+    }
+
+    /**
      * Pull a job from the queue
      * <p>
      * Note: a queue should be dequeued either with this or
