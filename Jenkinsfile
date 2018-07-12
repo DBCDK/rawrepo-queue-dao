@@ -7,8 +7,6 @@ pipeline {
 	tools {
 		maven "Maven 3"
 	}
-	environment {
-	}
 	triggers {
 		pollSCM("H/03 * * * *")
 	}
