@@ -37,7 +37,7 @@ public abstract class RawRepoQueueDAO {
      * {@link #dequeue(java.lang.String, int) dequeue}, but not both. It could
      * break for long queues.
      *
-     * @param worker name of worker that want's to take a job
+     * @param worker name of worker that wants to take a job
      * @return job description
      * @throws QueueException done at failure
      */
@@ -50,7 +50,7 @@ public abstract class RawRepoQueueDAO {
      * {@link #dequeue(java.lang.String) dequeue}, but not both. It could break
      * for long queues.
      *
-     * @param worker name of worker that want's to take a job
+     * @param worker name of worker that wants to take a job
      * @param wanted number of jobs to dequeue
      * @return job description list
      * @throws QueueException done at failure
