@@ -38,11 +38,13 @@ pipeline {
 		}
 		stage("Install artifact") {
             when {
-                expression { env.BRANCH_NAME == master }
+                expression { 
+		    env.BRANCH_NAME == 'master' 
+		}
             }
             steps {
-                sh "mvn install"
+                sh "mvn deploy"
             }
-		}
+	}
     }
 }
