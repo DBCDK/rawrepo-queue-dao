@@ -36,7 +36,7 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
                 }
             }
             if (reply != 1) {
-                throw new QueueException("Database error! {} was returned instead of '1'");
+                throw new QueueException("Database error! '" + Integer.toString(reply) + "' was returned instead of '1'");
             }
         } catch (SQLException ex) {
             LOGGER.error(LOG_DATABASE_ERROR, ex);
@@ -84,9 +84,8 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
     public List<QueueItem> dequeue(String worker, int wanted) throws QueueException {
         List<QueueItem> result = new ArrayList<>();
         try (CallableStatement stmt = connection.prepareCall(CALL_DEQUEUE_MULTI)) {
-            int pos = 1;
-            stmt.setString(pos++, worker);
-            stmt.setInt(pos, wanted);
+            stmt.setString(1, worker);
+            stmt.setInt(2, wanted);
             try (ResultSet resultSet = stmt.executeQuery()) {
                 while (resultSet.next()) {
                     QueueItem job = new QueueItem(resultSet.getString("bibliographicrecordid"),
@@ -118,12 +117,11 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
             throw new QueueException("Error cannot be empty in queueFail");
         }
         try (PreparedStatement stmt = connection.prepareStatement(QUEUE_ERROR)) {
-            int pos = 1;
-            stmt.setString(pos++, queueJob.getBibliographicRecordId());
-            stmt.setInt(pos++, queueJob.getAgencyId());
-            stmt.setString(pos++, queueJob.getWorker());
-            stmt.setString(pos++, error);
-            stmt.setTimestamp(pos, queueJob.getQueued());
+            stmt.setString(1, queueJob.getBibliographicRecordId());
+            stmt.setInt(2, queueJob.getAgencyId());
+            stmt.setString(3, queueJob.getWorker());
+            stmt.setString(4, error);
+            stmt.setTimestamp(5, queueJob.getQueued());
             stmt.executeUpdate();
         } catch (SQLException ex) {
             LOGGER.error(LOG_DATABASE_ERROR, ex);

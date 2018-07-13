@@ -14,7 +14,7 @@ pipeline {
 		timestamps()
 	}
 	stages {
-		stage("veriMaven build") {
+		stage("Maven build") {
 			steps {
 				sh "mvn clean install pmd:pmd findbugs:findbugs"
 			}
