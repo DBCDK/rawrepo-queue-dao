@@ -19,6 +19,7 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
     private final Connection connection;
 
     private static final String VALIDATE_CONNECTION = "SELECT 1";
+    private static final String CALL_ENQUEUE = "SELECT * FROM enqueue(?, ?, ?, ?, ?, ?)";
     private static final String CALL_DEQUEUE = "SELECT * FROM dequeue(?)";
     private static final String CALL_DEQUEUE_MULTI = "SELECT * FROM dequeue(?, ?)";
     private static final String QUEUE_ERROR = "INSERT INTO jobdiag(bibliographicrecordid, agencyid, worker, error, queued) VALUES(?, ?, ?, ?, ?)";
@@ -32,7 +33,7 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
         try (CallableStatement stmt = connection.prepareCall(VALIDATE_CONNECTION)) {
             try (ResultSet resultSet = stmt.executeQuery()) {
                 if (resultSet.next()) {
-                     reply = resultSet.getInt(1);
+                    reply = resultSet.getInt(1);
                 }
             }
             if (reply != 1) {
@@ -41,6 +42,49 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
         } catch (SQLException ex) {
             LOGGER.error(LOG_DATABASE_ERROR, ex);
             throw new QueueException("Error connection to the database engine", ex);
+        }
+    }
+
+    /**
+     * Put job(s) on the queue (in the database)
+     *
+     * @param bibliographicRecordId id of the record to queue
+     * @param agencyId              the agency owning the record
+     * @param provider              change initiator
+     * @param changed               is job for a record that has been changed
+     * @param leaf                  is this job for a tree leaf
+     * @throws QueueException when something goes wrong
+     */
+    @Override
+    public void enqueue(String bibliographicRecordId, int agencyId, String provider, boolean changed, boolean leaf) throws QueueException {
+        enqueue(bibliographicRecordId, agencyId, provider, changed, leaf, 1000);
+    }
+
+    @Override
+    public void enqueue(String bibliographicRecordId, int agencyId, String provider, boolean changed, boolean leaf, int priority) throws QueueException {
+        String recordId = bibliographicRecordId + ":" + agencyId;
+        LOGGER.debug("Enqueue: job = {}; provider = {}; changed = {}; leaf = {}, priority = {}", recordId, provider, changed, leaf, priority);
+
+        try (PreparedStatement stmt = connection.prepareStatement(CALL_ENQUEUE)) {
+            stmt.setString(1, bibliographicRecordId);
+            stmt.setInt(2, agencyId);
+            stmt.setString(3, provider);
+            stmt.setString(4, changed ? "Y" : "N");
+            stmt.setString(5, leaf ? "Y" : "N");
+            stmt.setInt(6, priority);
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                while (resultSet.next()) {
+                    if (resultSet.getBoolean(2)) {
+                        LOGGER.info("Queued: worker = {}; job = {}", resultSet.getString(1), recordId);
+                    } else {
+                        LOGGER.info("Queued: worker = {}; job = {}; skipped - already on queue", resultSet.getString(1), recordId);
+                    }
+                }
+
+            }
+        } catch (SQLException ex) {
+            LOGGER.error(LOG_DATABASE_ERROR, ex);
+            throw new QueueException("Error queueing job", ex);
         }
     }
 
