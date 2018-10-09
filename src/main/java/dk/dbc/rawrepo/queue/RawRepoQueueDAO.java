@@ -31,6 +31,20 @@ public abstract class RawRepoQueueDAO {
     }
 
     /**
+     * Put job(s) on the queue (in the database)
+     *
+     * @param bibliographicRecordId id of the record to queue
+     * @param agencyId              the agency owning the record
+     * @param provider              change initiator
+     * @param changed               is job for a record that has been changed
+     * @param leaf                  is this job for a tree leaf
+     * @throws QueueException done at failure
+     */
+    public abstract void enqueue(String bibliographicRecordId, int agencyId, String provider, boolean changed, boolean leaf) throws QueueException;
+
+    public abstract void enqueue(String bibliographicRecordId, int agencyId, String provider, boolean changed, boolean leaf, int priority) throws QueueException;
+
+    /**
      * Pull a job from the queue
      * <p>
      * Note: a queue should be dequeued either with this or
