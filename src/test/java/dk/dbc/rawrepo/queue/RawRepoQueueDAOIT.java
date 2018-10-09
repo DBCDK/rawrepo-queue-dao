@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,6 +66,23 @@ public class RawRepoQueueDAOIT {
         stmt.execute();
     }
 
+    @Test
+    public void testGetConfiguration() throws Exception {
+        postgres.clearTables("configurations");
+
+        PreparedStatement stmt = connection.prepareStatement("INSERT INTO configurations (key, value) VALUES(?, ?)");
+        stmt.setString(1, "RAWREPO_RECOR_SERVICE_URL");
+        stmt.setString(2, "http://RAWREPO_RECOR_SERVICE_URL:42");
+        stmt.execute();
+
+        RawRepoQueueDAO dao = RawRepoQueueDAO.builder(connection).build();
+
+        HashMap<String, String> expected = new HashMap<>();
+        expected.put("RAWREPO_RECOR_SERVICE_URL", "http://RAWREPO_RECOR_SERVICE_URL:42");
+
+        assertEquals(expected, dao.getConfiguration());
+    }
+
     /**
      * Raise an (descriptive) exception if a collection of strings doesn't match
      * supplied list
@@ -94,7 +112,7 @@ public class RawRepoQueueDAOIT {
         }
         return result;
     }
-    
+
     @Test
     public void testDequeue() throws SQLException, QueueException {
         RawRepoQueueDAO dao = RawRepoQueueDAO.builder(connection).build();
