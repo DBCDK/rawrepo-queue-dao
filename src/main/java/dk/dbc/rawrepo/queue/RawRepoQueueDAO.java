@@ -1,6 +1,7 @@
 package dk.dbc.rawrepo.queue;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class RawRepoQueueDAO {
@@ -29,6 +30,8 @@ public abstract class RawRepoQueueDAO {
     public static Builder builder(Connection connection) {
         return new Builder(connection);
     }
+
+    public abstract HashMap<String, String> getConfiguration() throws ConfigurationException;
 
     /**
      * Put job(s) on the queue (in the database)

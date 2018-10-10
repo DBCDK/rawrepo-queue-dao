@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
@@ -23,6 +24,7 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
     private static final String CALL_DEQUEUE = "SELECT * FROM dequeue(?)";
     private static final String CALL_DEQUEUE_MULTI = "SELECT * FROM dequeue(?, ?)";
     private static final String QUEUE_ERROR = "INSERT INTO jobdiag(bibliographicrecordid, agencyid, worker, error, queued) VALUES(?, ?, ?, ?, ?)";
+    private static final String CONFIGURATIONS_ALL = "SELECT key, value FROM configurations";
 
     public RawRepoQueueDAOImpl(Connection connection) {
         this.connection = connection;
@@ -42,6 +44,22 @@ public class RawRepoQueueDAOImpl extends RawRepoQueueDAO {
         } catch (SQLException ex) {
             LOGGER.error(LOG_DATABASE_ERROR, ex);
             throw new QueueException("Error connection to the database engine", ex);
+        }
+    }
+
+    @Override
+    public HashMap<String, String> getConfiguration() throws ConfigurationException {
+        HashMap<String, String> configuration = new HashMap<>();
+        try (CallableStatement stmt = connection.prepareCall(CONFIGURATIONS_ALL)) {
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                while (resultSet.next()) {
+                    configuration.put(resultSet.getString("key"), resultSet.getString("value"));
+                }
+                return configuration;
+            }
+        } catch (SQLException ex) {
+            LOGGER.error(LOG_DATABASE_ERROR, ex);
+            throw new ConfigurationException("Error dequeueing jobs", ex);
         }
     }
 
