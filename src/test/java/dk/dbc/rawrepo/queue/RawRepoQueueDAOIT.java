@@ -71,14 +71,14 @@ public class RawRepoQueueDAOIT {
         postgres.clearTables("configurations");
 
         PreparedStatement stmt = connection.prepareStatement("INSERT INTO configurations (key, value) VALUES(?, ?)");
-        stmt.setString(1, "RAWREPO_RECOR_SERVICE_URL");
-        stmt.setString(2, "http://RAWREPO_RECOR_SERVICE_URL:42");
+        stmt.setString(1, "RAWREPO_RECORD_SERVICE_URL");
+        stmt.setString(2, "http://RAWREPO_RECORD_SERVICE_URL:42");
         stmt.execute();
 
         RawRepoQueueDAO dao = RawRepoQueueDAO.builder(connection).build();
 
         HashMap<String, String> expected = new HashMap<>();
-        expected.put("RAWREPO_RECOR_SERVICE_URL", "http://RAWREPO_RECOR_SERVICE_URL:42");
+        expected.put("RAWREPO_RECORD_SERVICE_URL", "http://RAWREPO_RECORD_SERVICE_URL:42");
 
         assertEquals(expected, dao.getConfiguration());
     }
