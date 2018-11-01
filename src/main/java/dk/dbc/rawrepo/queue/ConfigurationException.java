@@ -6,6 +6,8 @@ public class ConfigurationException extends Exception {
         super(message, cause);
     }
 
-    public ConfigurationException(String message) { super(message); }
+    public ConfigurationException(String message) {
+        super(message);
+    }
 
 }
